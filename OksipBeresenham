@@ -1,0 +1,142 @@
+//Algoritma Bresenham
+
+#include <GL\freeglut.h>
+#include <GL\glut.h>
+#include <iostream>
+
+using namespace std;
+
+//identifier fungsi
+void init();
+void display(void);
+void bresenham(void);
+
+//  posisi window di layar
+int window_x;
+int window_y;
+
+//  ukuran window
+int window_width = 480;
+int window_height = 480;
+
+//  judul window
+char *judul_window = "Algoritma Bresenham";
+
+void main(int argc, char **argv)
+{
+	//  inisialisasi GLUT (OpenGL Utility Toolkit)
+	glutInit(&argc, argv);
+	// set posisi window supaya berada di tengah 
+	window_x = (glutGet(GLUT_SCREEN_WIDTH) - window_width) / 2;
+	window_y = (glutGet(GLUT_SCREEN_HEIGHT) - window_height) / 2;
+	glutInitWindowSize(window_width, window_height); //set ukuran window 
+	glutInitWindowPosition(window_x, window_y); //set posisi window
+
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE); // set display RGB dan double buffer
+	glutCreateWindow(judul_window); //set judul window
+
+	
+	init(); //jalankan fungsi init 
+	glutDisplayFunc(display); //  set fungsi display
+	glutMainLoop(); // set loop pemrosesan GLUT
+}
+
+void init() //fungsi init
+{
+	glClearColor(0.0, 0.0, 0.0, 0.0); //set warna background 
+	glColor3f(1.0, 1.0, 1.0); //set warna titik
+	glPointSize(2.0); //set ukuran titik
+	glMatrixMode(GL_PROJECTION); //set mode matriks yang digunakan 
+	glLoadIdentity(); // load matriks identitas
+	gluOrtho2D(0.0, 800.0, 0.0, 600.0); // set ukuran viewing window
+}
+void display(void)
+{
+	glClear(GL_COLOR_BUFFER_BIT); //clear color
+	bresenham(); //jalankan fungsi bresenham didalam display
+	glutSwapBuffers(); //swap buffer 
+}
+
+void bresenham(void) {
+	int x1, y1, x2, y2, x, y, dx, dy, xend, p, duady, duadydx;
+	//tentukan titik awal dan akhir
+	x1 = 10; // titik x awal
+	y1 = 10; // titik y awal 
+	x2 = 500; // titik x akhir 
+	y2 = 400; // titik y akhir
+	x = x1; // titik x yang akan dihubungkan dalam pembentukkan garis
+	y = y1; // titik y yang akan dihubungkan dalam pembentukkan garis
+
+	//hitung dx dan dy
+	dx = abs(x2 - x1); // dx = delta x, abs mengubah nilai dx jika negatif jadi positif (absolut)
+		// delta x = Xn - Xo, dimana Xn = X sejumlah n (x akhir), dan Xo = X awal
+	dy = abs(y2 - y1); // dy = delta y, abs mengubah nilai dy jika negatif jadi positif (absolut)
+		// delta y = Yn - Yo, dimana Yn = Y sejumlah n (y akhir), dan Yo = Y awal
+
+	// hitung p : Nilai Pengubahan Posisi
+	p = 2 * dy - dx; // Po (P awal) : nilai pengubahan posisi awal, 2 * delta y - delta x
+		//Po = (2 delta y) - delta x
+	duady = 2 * dy; // dua delta y = 2 * delta y
+	duadydx = 2 * (dy - dx); // dua delta delta y delta x = 2 * (delta y - delta x)
+
+	//tentukan titik awal dan akhir
+	if (x1 > x2) // jika x1 > x2
+	{ 
+		x = x2; // titik x2 menjadi titik x awal 
+		y = y2; // titik y2 menjadi titik y awal 
+		xend = x1; // titik x akhir adalah x1
+	}
+	else // jika x1 < x2
+	{
+		x = x1; // titik x1 menjadi titik x awal 
+		y = y1; // titik y1 menjadi titik y awal 
+		xend = x2; // titik x akhir adalah x2
+	}
+
+	//gambar titik awal
+	glBegin(GL_POINTS);
+	glVertex2i(x, y);
+
+	//dx = abs(x2 - x1) , xn-x1
+	//dy = abs(y2 - y1), yn - y1
+	//p = 2 * dy - dx
+	//duady = 2 * dy
+	//duadydx = 2 * (dy - dx)
+
+	//perulangan untuk menggambar titik-titik 
+	while (x < xend) // selama xk proyeksi < xk akhir, k=0
+	{ 	
+		x++; // x = x+1, x bergeser 1 posisi
+		if (p < 0) // jika pk < 0, k=0
+		{ 
+			p += duady; // pk = pk+duady, pk + dua delta y
+		}
+		else // jika pk > 0 , yang dipakai
+		{
+			//dimana Po (P awal) = 0
+			if (y1 > y2)  // jika y1 awal > y2 akhir
+			{
+				y--; // y = y-1
+			}
+			else // jika y1 awal < y2 akhir
+			{
+				y++; // y = y+1, y bergeser 1 posisi
+				p += duadydx; // p = p+duadydx
+					//dimana P + dua delta y delta x
+					//==> duadydx = 2 * (dy - dx)
+					//==> duadydx = 2dy - 2dx, dibaca 2 delta y - 2 delta x
+					//jadi, p = p + 2dy - 2dx, p adalah Po, bernilai 0
+					//didapat Pk1
+			}
+		}
+		//maka x bergeser 1 dan y bergeser 1
+		//dimana x = x1 bernilai 10 dan y = y1 bernilai 10
+		//maka x menjadi 11 dan y menjadi 11
+		glVertex2i(x, y); // masukkan x = 11 dan y = 11 di display
+		//kembali ke perulangan sampai x < xend, dimnana xend = 500
+	}
+
+	glEnd();
+	glFlush();
+}
+
